@@ -16,7 +16,7 @@ Example `docker-compose.yaml`
 version: '3'
 services:
   web:
-    build: .
+    image: ghcr.io/reasonableai/semantic-network:v0.0.4-alpha
     ports:
       - "5000:5000"
     environment:
@@ -28,6 +28,7 @@ services:
         This API is useful for answering questions about Python coding.
     depends_on:
       - db
+      
   db:
     image: neo4j:latest
     environment:
