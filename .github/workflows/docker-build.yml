@@ -28,4 +28,6 @@ jobs:
         context: .
         file: ./Dockerfile
         push: true
-        tags: ghcr.io/reasonableai/semantic-network:${{ github.event.release.tag_name }}
+        tags: |
+          ghcr.io/reasonableai/semantic-network:${{ github.event.release.tag_name }}
+          ghcr.io/reasonableai/semantic-network:latest
