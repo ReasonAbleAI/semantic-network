@@ -8,7 +8,7 @@ A semantic network stores concepts within a graph-based data structure and acces
 2. Run `pipenv install` to install the dependencies
 3. Run `pipenv shell` to shell into your environment
 
-## Containerized Deployment
+# Deployment
 
 Example `docker-compose.yaml`
 
@@ -50,132 +50,345 @@ $ docker-compose up
 
 This API is built using Flask and Neo4j. It provides endpoints to create, read, update, delete and search nodes and relationships in a Neo4j graph database.
 
+## Models
+
+### Node
+
+A `Node` represents a document in the system. It has the following fields:
+
+- `document`: (String) The content of the document. This field is required.
+- `keywords`: (List of Strings) Keywords associated with the document.
+- `source`: (String) The source of the document.
+- `credibility`: (Float) The credibility score of the document, ranging from 0 to 1.
+- `accuracy`: (Float) The accuracy score of the document, ranging from 0 to 1.
+- `authenticity`: (Float) The authenticity score of the document, ranging from 0 to 1.
+- `confidence`: (Float) The confidence score of the document, ranging from 0 to 1.
+- `relevance`: (Float) The relevance score of the document, ranging from 0 to 1.
+- `type`: (String) The type of the document.
+- `created_at`: (DateTime) The time when the document was created.
+
+### Relationship
+
+A `Relationship` represents a connection between two nodes. It has the following fields:
+
+- `target_id`: (Integer) The id of the target node. This field is required.
+- `weight`: (Float) The weight of the relationship, ranging from 0 to 1.
+- `accuracy`: (Float) The accuracy score of the relationship, ranging from 0 to 1.
+- `authenticity`: (Float) The authenticity score of the relationship, ranging from 0 to 1.
+- `confidence`: (Float) The confidence score of the relationship, ranging from 0 to 1.
+- `relevance`: (Float) The relevance score of the relationship, ranging from 0 to 1.
+- `credibility`: (Float) The credibility score of the relationship, ranging from 0 to 1.
+- `reasoning`: (String) The reasoning behind the relationship.
+- `created_at`: (DateTime) The time when the relationship was created.
+
+# Flask API Documentation
+
+This API is built using Flask and Neo4j. It provides endpoints for creating, updating, retrieving, and deleting nodes and relationships in a Neo4j graph database. It also provides a search functionality to find nodes based on various parameters.
+
 ## Endpoints
 
-### 1. Create Node
+### POST /nodes
 
-- **URL:** `/nodes`
-- **Method:** `POST`
-- **Data Params:**
-  - `document` (string, required)
-  - `keywords` (list of strings, required)
-  - `source` (string, optional)
-  - `trustworthiness` (float, required, between 0 and 1)
+Creates a new node.
 
-- **Curl Example:**
-  ```bash
-  curl -X POST -H "Content-Type: application/json" -d '{"document":"example document", "keywords":["keyword1", "keyword2"], "trustworthiness":0.8}' http://127.0.0.1:5000/nodes
-  ```
+**Request**
 
-### 2. Get Node
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{
+    "document": "document1",
+    "keywords": ["keyword1", "keyword2"],
+    "source": "source1",
+    "credibility": 0.8,
+    "accuracy": 0.9,
+    "authenticity": 0.7,
+    "confidence": 0.6,
+    "relevance": 0.5,
+    "type": "type1"
+}' "http://localhost:5000/nodes"
+```
 
-- **URL:** `/nodes/<id>`
-- **Method:** `GET`
+**Response**
 
-- **Curl Example:**
-  ```bash
-  curl http://127.0.0.1:5000/nodes/1
-  ```
+```json
+{
+    "id": 1
+}
+```
 
-### 3. Update Node
+### GET /nodes/{id}
 
-- **URL:** `/nodes/<id>`
-- **Method:** `PUT`
-- **Data Params:**
-  - `document` (string, required)
-  - `keywords` (list of strings, required)
-  - `source` (string, optional)
-  - `trustworthiness` (float, required, between 0 and 1)
+Retrieves a node by its ID.
 
-- **Curl Example:**
-  ```bash
-  curl -X PUT -H "Content-Type: application/json" -d '{"document":"updated document", "keywords":["keyword3", "keyword4"], "trustworthiness":0.9}' http://127.0.0.1:5000/nodes/1
-  ```
+**Request**
 
-### 4. Delete Node
+```bash
+curl -X GET "http://localhost:5000/nodes/1"
+```
 
-- **URL:** `/nodes/<id>`
-- **Method:** `DELETE`
+**Response**
 
-- **Curl Example:**
-  ```bash
-  curl -X DELETE http://127.0.0.1:5000/nodes/1
-  ```
+```json
+{
+    "document": "document1",
+    "keywords": ["keyword1", "keyword2"],
+    "source": "source1",
+    "credibility": 0.8,
+    "accuracy": 0.9,
+    "authenticity": 0.7,
+    "confidence": 0.6,
+    "relevance": 0.5,
+    "type": "type1",
+    "created_at": "2022-01-01T00:00:00Z"
+}
+```
 
-### 5. Search Nodes
+### PUT /nodes/{id}
 
-- **URL:** `/search`
-- **Method:** `GET`
-- **Query Params:**
-  - `query` (string, optional)
-  - `keywords` (string, optional)
-  - `min_trustworthiness` (float, optional, between 0 and 1)
-  - `regex` (string, optional)
+Updates a node by its ID.
 
-- **Curl Example:**
-  ```bash
-  curl "http://127.0.0.1:5000/search?query=example"
-  curl "http://127.0.0.1:5000/search?keywords=keyword1,keyword"
-  curl "http://127.0.0.1:5000/search?min_trustworthiness=0.7"
-  curl "http://127.0.0.1:5000/search?regex=ex.*le"
-  ```
+**Request**
 
- Multiple arguments are joined with AND conditions
+```bash
+curl -X PUT -H "Content-Type: application/json" -d '{
+    "document": "document2",
+    "keywords": ["keyword3", "keyword4"],
+    "source": "source2",
+    "credibility": 0.7,
+    "accuracy": 0.8,
+    "authenticity": 0.6,
+    "confidence": 0.5,
+    "relevance": 0.4,
+    "type": "type2"
+}' "http://localhost:5000/nodes/1"
+```
 
-  ```bash
-  curl "http://127.0.0.1:5000/search?query=example&keywords=keyword1"
-  curl "http://127.0.0.1:5000/search??regex=ex.*le&min_trustworthiness=0.7"
-  ```
+**Response**
 
-### 6. Create Relationship
+```json
+{
+    "document": "document2",
+    "keywords": ["keyword3", "keyword4"],
+    "source": "source2",
+    "credibility": 0.7,
+    "accuracy": 0.8,
+    "authenticity": 0.6,
+    "confidence": 0.5,
+    "relevance": 0.4,
+    "type": "type2",
+    "created_at": "2022-01-01T00:00:00Z"
+}
+```
 
-- **URL:** `/nodes/<id>/relationships`
-- **Method:** `POST`
-- **Data Params:**
-  - `target_id` (integer, required)
-  - `weight` (float, required, between 0 and 1)
+### DELETE /nodes/{id}
 
-- **Curl Example:**
-  ```bash
-  curl -X POST -H "Content-Type: application/json" -d '{"target_id":2, "weight":0.5}' http://127.0.0.1:5000/nodes/1/relationships
-  ```
+Deletes a node by its ID.
 
-### 7. Get Relationships
+**Request**
 
-- **URL:** `/nodes/<id>/relationships`
-- **Method:** `GET`
+```bash
+curl -X DELETE "http://localhost:5000/nodes/1"
+```
 
-- **Curl Example:**
-  ```bash
-  curl http://127.0.0.1:5000/nodes/1/relationships
-  ```
+**Response**
 
-### 8. Delete Relationship
+```json
+{
+    "message": "Node '1' deleted successfully"
+}
+```
 
-- **URL:** `/relationships/<id>`
-- **Method:** `DELETE`
+### GET /search
 
-- **Curl Example:**
-  ```bash
-  curl -X DELETE http://127.0.0.1:5000/relationships/1
-  ```
+Searches for nodes based on various parameters. 
 
-### 9. Get Documentation
+**Parameters:**
 
-- **URL:** `/documentation`
-- **Method:** `GET`
+- `query`: A string that should be contained in the document of the nodes.
+- `keywords`: A comma-separated list of keywords that should be contained in the keywords of the nodes.
+- `min_credibility`: The minimum credibility score of the nodes.
+- `min_accuracy`: The minimum accuracy score of the nodes.
+- `min_authenticity`: The minimum authenticity score of the nodes.
+- `min_confidence`: The minimum confidence score of the nodes.
+- `min_relevance`: The minimum relevance score of the nodes.
+- `type`: The type of the nodes.
+- `regex`: A regular expression that the document of the nodes should match.
 
-- **Curl Example:**
-  ```bash
-  curl http://127.0.0.1:5000/documentation
-  ```
+**Examples:**
 
-### 10. Delete All Nodes and Relationships
+1. Search for nodes containing a specific query in the document:
 
-- **URL:** `/delete_all`
-- **Method:** `DELETE`
+    **Request**
 
-- **Curl Example:**
-  ```bash
-  curl -X DELETE http://127.0.0.1:5000/delete_all
-  ```
+    ```bash
+    curl -X GET "http://localhost:5000/search?query=document2"
+    ```
+
+2. Search for nodes containing specific keywords:
+
+    **Request**
+
+    ```bash
+    curl -X GET "http://localhost:5000/search?keywords=keyword3,keyword4"
+    ```
+
+3. Search for nodes with a minimum credibility score:
+
+    **Request**
+
+    ```bash
+    curl -X GET "http://localhost:5000/search?min_credibility=0.7"
+    ```
+
+4. Search for nodes of a specific type:
+
+    **Request**
+
+    ```bash
+    curl -X GET "http://localhost:5000/search?type=type2"
+    ```
+
+5. Search for nodes matching a regular expression:
+
+    **Request**
+
+    ```bash
+    curl -X GET "http://localhost:5000/search?regex=document.*"
+    ```
+
+6. Search for nodes using a combination of parameters:
+
+    **Request**
+
+    ```bash
+    curl -X GET "http://localhost:5000/search?query=document2&keywords=keyword3,keyword4&min_credibility=0.7&min_accuracy=0.8&min_authenticity=0.6&min_confidence=0.5&min_relevance=0.4&type=type2&regex=document.*"
+    ```
+
+**Response**
+
+```json
+[
+    {
+        "node_id": 1,
+        "document": "document2",
+        "keywords": ["keyword3", "keyword4"],
+        "source": "source2",
+        "credibility": 0.7,
+        "accuracy": 0.8,
+        "authenticity": 0.6,
+        "confidence": 0.5,
+        "relevance": 0.4,
+        "type": "type2",
+        "created_at": "2022-01-01T00:00:00Z"
+    }
+]
+```
+
+### POST /nodes/{id}/relationships
+
+Creates a new relationship from a node.
+
+**Request**
+
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{
+    "target_id": 2,
+    "weight": 0.9,
+    "accuracy": 0.8,
+    "authenticity": 0.7,
+    "confidence": 0.6,
+    "relevance": 0.5,
+    "credibility": 0.4,
+    "reasoning": "reasoning1"
+}' "http://localhost:5000/nodes/1/relationships"
+```
+
+**Response**
+
+```json
+{
+    "relationship_id": 1
+}
+```
+
+### GET /nodes/{id}/relationships
+
+Retrieves relationships of a node.
+
+**Request**
+
+```bash
+curl -X GET "http://localhost:5000/nodes/1/relationships?order_by=weight"
+```
+
+**Response**
+
+```json
+[
+    {
+        "relationship_id": 1,
+        "node_id": 2,
+        "weight": 0.9,
+        "accuracy": 0.8,
+        "authenticity": 0.7,
+        "confidence": 0.6,
+        "relevance": 0.5,
+        "credibility": 0.4,
+        "reasoning": "reasoning1",
+        "created_at": "2022-01-01T00:00:00Z"
+    }
+]
+```
+
+### DELETE /relationships/{id}
+
+Deletes a relationship by its ID.
+
+**Request**
+
+```bash
+curl -X DELETE "http://localhost:5000/relationships/1"
+```
+
+**Response**
+
+```json
+{
+    "message": "Relationship '1' deleted successfully"
+}
+```
+
+### GET /documentation
+
+Retrieves the documentation of the API.
+
+**Request**
+
+```bash
+curl -X GET "http://localhost:5000/documentation"
+```
+
+**Response**
+
+```json
+{
+    "name": "Flask API",
+    "description": "This API is built using Flask and Neo4j."
+}
+```
+
+### DELETE /delete_all
+
+Deletes all nodes and relationships.
+
+**Request**
+
+```bash
+curl -X DELETE "http://localhost:5000/delete_all"
+```
+
+**Response**
+
+```json
+{
+    "message": "All nodes and relationships deleted successfully"
+}
